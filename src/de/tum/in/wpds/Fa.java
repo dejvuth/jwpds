@@ -248,9 +248,12 @@ public class Fa {
 	 */
 	public Set<Transition> getNonInitialTransitions() {
 		Set<Transition> set = new HashSet<Transition>();
-		for (Map.Entry<String, Set<Transition>> map : hmaps.entrySet()) {
-			if (map.getKey().matches("\\(.*,.*\\)"))
-				set.addAll(map.getValue());
+		for (Map.Entry<String, Set<Transition>> hmap : hmaps.entrySet()) {
+			if (!isInitial(hmap.getKey()))
+				set.addAll(hmap.getValue());
+			
+//			if (map.getKey().matches("\\(.*,.*\\)"))
+//				set.addAll(map.getValue());
 		}
 		
 		return set;
@@ -504,8 +507,14 @@ public class Fa {
 	 * @see Semiring#updateGlobal(Semiring).
 	 */
 	public void updateGlobal(Semiring newglobal) {
-		for (Semiring d : trans.values())
+		for (Semiring d : trans.values()) {
 			d.updateGlobal(newglobal);
+		}
+//		Set<Transition> inits = getInitialTransitions();
+//		if (inits == null) return;
+//		for (Transition t : inits) {
+//			getWeight(t).updateGlobal(newglobal);
+//		}
 	}
 	
 	/**

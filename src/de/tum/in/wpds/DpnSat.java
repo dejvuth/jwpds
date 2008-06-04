@@ -454,7 +454,7 @@ public class DpnSat extends Sat {
 					}
 					
 					// Push rule
-					String s = String.format("(%s,%s)", p, w[0]);
+					String s = String.format("(%s,%s)%d", p, w[0], level);
 					if (update(Ai, trans, d.extendPush(rule.d, monitor), p, w[0], s)) {
 						updateListener(w[0]);
 						addtoworklist = true;
