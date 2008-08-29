@@ -157,7 +157,7 @@ public class PdsSat extends Sat {
 				if (set != null) {
 					for (Transition ts : set) {
 						log("\t\t\tTransition reached from epsilon %s%n", ts);
-						if (update(rule, d.extendPop(sat.getWeight(ts), monitor), 
+						if (update(rule, sat.getWeight(ts).extendPop(d, monitor), 
 								ts.p, w[1], t.q, t, ts))
 							updateListener(w[1]);
 					}

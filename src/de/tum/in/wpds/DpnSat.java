@@ -274,7 +274,7 @@ public class DpnSat extends Sat {
 			
 			if (newglobal != null) {
 				// Updates globals
-				if (Sat.DEBUG)
+				if (Sat.all())
 					log("Updating with newglobal: %s%n", newglobal.toRawString());
 				before = System.currentTimeMillis();
 				for (int i = 0; i < A.length; i++) {
@@ -359,7 +359,7 @@ public class DpnSat extends Sat {
 					if (tqSet == null) continue;
 					for (Transition tq : tqSet) {
 						log("\t\t\tTransition reached from epsilon %s%n", tq);
-						if (DEBUG) log("%n\t\t\t%s%n%n", Ai.getWeight(tq).toRawString());
+						if (all()) log("%n\t\t\t%s%n%n", Ai.getWeight(tq).toRawString());
 						Semiring newd = d.extendPop(Ai.getWeight(tq), monitor);
 						if (update(Ai, trans, newd, t.p, tq.a, tq.q)) {
 							updateListener(tq.a);
@@ -465,8 +465,8 @@ public class DpnSat extends Sat {
 					if (set != null) {
 						for (Transition ts : set) {
 							log("\t\t\tTransition reached from epsilon %s%n", ts);
-							if (DEBUG) log("%n\t\t\t%s%n%n", Ai.getWeight(ts).toRawString());
-							if (update(Ai, trans, newd.extendPop(Ai.getWeight(ts), monitor), 
+							if (all()) log("%n\t\t\t%s%n%n", Ai.getWeight(ts).toRawString());
+							if (update(Ai, trans, Ai.getWeight(ts).extendPop(newd, monitor), 
 									ts.p, w[1], t.q)) {
 								updateListener(w[1]);
 								addtoworklist = true;
@@ -559,7 +559,7 @@ public class DpnSat extends Sat {
 			monitor.subTask(String.format(
 					"Analyzing aggregate %d (level %d) ...", wi.id, wi.level + 1));
 			log("Removing from worklist (id=%d): (level: %d, last: %d, g: %s, j: %d)%n",
-					wi.id, wi.level, wi.last, (symbolic || !DEBUG) ? "" : wi.g.toRawString(), wi.A.length);
+					wi.id, wi.level, wi.last, (symbolic || !all()) ? "" : wi.g.toRawString(), wi.A.length);
 //			System.out.printf("%d (level %d): %n", wi.id, wi.level);
 			
 			// Returns if the threshold reached

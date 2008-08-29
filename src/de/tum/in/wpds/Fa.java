@@ -80,7 +80,7 @@ public class Fa {
 				if (!newr.equals(oldr)) {
 					changed = true;
 					Sat.log("\t\tAdding modified ");
-					if (Sat.DEBUG) {
+					if (Sat.all()) {
 						Sat.log("oldr: %s%n%n", oldr.toRawString());
 						Sat.log("\t\tr: %s%n%n\t\t", r.toRawString());
 					}
@@ -92,7 +92,7 @@ public class Fa {
 		}
 		
 		Sat.log("%s%n", t);
-		if (Sat.DEBUG)
+		if (Sat.all())
 			Sat.log("\t\t%s%n%n", newr.toRawString());
 		trans.put(t, newr);
 		
@@ -113,6 +113,9 @@ public class Fa {
 			}
 			set.add(t);
 		}
+		
+//		if (changed && t.p.equals(q_i))
+//			newr.store();
 		
 		return changed;
 	}

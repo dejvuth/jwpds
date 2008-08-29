@@ -24,7 +24,7 @@ public abstract class Sat {
 	/**
 	 * Determines whether to log debug information.
 	 */
-	public static boolean DEBUG = false;
+	private static int DEBUG = 0;
 	
 	/**
 	 * The logger.
@@ -75,16 +75,44 @@ public abstract class Sat {
 	 * @param level the verbosity level.
 	 */
 	public static void setVerbosity(int level) {
-		// Level 3: prints everything
-		if (level >= 3) DEBUG = true;
+		DEBUG = level;
+		if (level >= 2)
+			logger.setLevel(Level.ALL);
+		else if (level == 1)
+			logger.setLevel(Level.INFO);
+		else
+			logger.setLevel(Level.SEVERE);
 		
-		// Level 1: prints very little
-		else if (level == 1) logger.setLevel(Level.INFO);
 		
-		// Level 0: prints nothing
-		else if (level == 0) logger.setLevel(Level.SEVERE);
-		
-		// Default level 2: prints progresses without BDDs.
+//		// Level 3: prints everything
+//		if (level >= 3) {
+//			DEBUG = 3;
+//			logger.setLevel(Level.ALL);
+//		}
+//		
+//		else if (level >= 2) {
+//			DEBUG = 2;
+//			logger.setLevel(Level.ALL);
+//		}
+//		
+//		// Level 1: prints very little
+//		else if (level == 1) {
+//			DEBUG = 1;
+//			logger.setLevel(Level.INFO);
+//		}
+//		
+//		// Level 0: prints nothing
+//		else if (level == 0) { logger.setLevel(Level.SEVERE);
+//		
+//		// Default level 2: prints progresses without BDDs.
+	}
+	
+	public static boolean all() {
+		return DEBUG >= 3;
+	}
+	
+	public static boolean debug() {
+		return DEBUG >=2;
 	}
 	
 	public static void info(String msg, Object... args) {
