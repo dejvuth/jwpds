@@ -37,7 +37,7 @@ public class DpnSat extends Sat {
 	/**
 	 * Determines if the analysis is symbolic.
 	 */
-	private boolean symbolic;
+	private boolean lazy;
 	
 	/**
 	 * Maps config <p,a> to rules having <p,a> on the left-hand-side, 
@@ -74,12 +74,12 @@ public class DpnSat extends Sat {
 	 * @param k the context bound.
 	 * @param symbolic determines if the analysis is symbolic.
 	 */
-	public DpnSat(Dpn dpn, Semiring g0, int n, int k, boolean symbolic) {
+	public DpnSat(Dpn dpn, Semiring g0, int n, int k, boolean lazy) {
 		this.dpn = dpn;
 		this.g0 = g0;
 		this.n = n;
 		this.k = k;
-		this.symbolic = symbolic;
+		this.lazy = lazy;
 	}
 	
 	/**
@@ -298,9 +298,8 @@ public class DpnSat extends Sat {
 			eqrel.sliceWith(eqclass, 2);
 			times[4] = elapsedTime(before);
 			
-			log(
-					"Time: [rel=%.2f, eqclass=%.2f, extract=%.2f, update=%.2f, slice=%.2f]%n",
-					times[0], times[1], times[2], times[3], times[4]);
+			log("Time: [rel=%.2f, eqclass=%.2f, extract=%.2f, update=%.2f, slice=%.2f]%n",
+				times[0], times[1], times[2], times[3], times[4]);
 		}
 		
 		// Statistics
@@ -351,13 +350,10 @@ public class DpnSat extends Sat {
 				
 				// Removes t = (p,a,q) from trans
 				Transition t = (Transition) trans.remove();
-//				Semiring d = Ai.getWeight(t);
-				Semiring d = Ai.getDiff(t);
-				if (d == null) {
-					log("\t\tZero diff at %s%n", t);
-					continue;
-				}
+				log("%s%n", t);
 				
+//				Semiring d = Ai.getWeight(t);
+
 				// a is epsilon
 				if (t.a.equals(Fa.epsilon)) {
 					Set<Transition> tqSet = Ai.hmaps.get(t.q);
@@ -365,12 +361,19 @@ public class DpnSat extends Sat {
 					for (Transition tq : tqSet) {
 						log("\t\t\tTransition reached from epsilon %s%n", tq);
 						if (all()) log("%n\t\t\t%s%n%n", Ai.getWeight(tq).toRawString());
-						Semiring newd = d.extendPop(Ai.getWeight(tq), monitor);
+//						Semiring newd = d.extendPop(Ai.getWeight(tq), monitor);
+						Semiring newd = Ai.getWeight(t).extendPop(Ai.getWeight(tq), monitor);
 						if (update(Ai, trans, newd, t.p, tq.a, tq.q)) {
 							updateListener(tq.a);
 							addtoworklist = true;
 						}
 					}
+					continue;
+				}
+				
+				Semiring d = Ai.getDiff(t);
+				if (d == null) {
+					log("\t\tZero diff at %s%n", t);
 					continue;
 				}
 				
@@ -503,7 +506,7 @@ public class DpnSat extends Sat {
 		}
 		
 		log("Splitting...%n");
-		if (!symbolic) {
+		if (!lazy) {
 			List<Splitted> splitted = A[c].split(currentThreadId, monitor);
 			log("Split count: %d%n", splitted.size());
 			for (Splitted s : splitted) {
@@ -565,7 +568,7 @@ public class DpnSat extends Sat {
 			monitor.subTask(String.format(
 					"Analyzing aggregate %d (level %d) ...", wi.id, wi.level + 1));
 			log("Removing from worklist (id=%d): (level: %d, last: %d, g: %s, j: %d)%n",
-					wi.id, wi.level, wi.last, (symbolic || !all()) ? "" : wi.g.toRawString(), wi.A.length);
+					wi.id, wi.level, wi.last, (lazy || !all()) ? "" : wi.g.toRawString(), wi.A.length);
 //			System.out.printf("%d (level %d): %n", wi.id, wi.level);
 			
 			// Returns if the threshold reached
@@ -573,7 +576,7 @@ public class DpnSat extends Sat {
 				
 				//FIXME deletes the result to save some space
 				if (wi.g != null) wi.g.free();
-				if (!symbolic) wi.A[wi.last].free();
+				if (!lazy) wi.A[wi.last].free();
 				
 				continue;
 			}
