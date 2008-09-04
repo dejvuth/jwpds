@@ -20,6 +20,8 @@ public class Fa {
 	 */
 	HashMap<Transition, Semiring> trans = new HashMap<Transition, Semiring>();
 	
+	private HashMap<Transition, Semiring> diffs = new HashMap<Transition, Semiring>();
+	
 	/**
 	 * Header maps: Maps a state to transitions starting from this state.
 	 */
@@ -64,19 +66,28 @@ public class Fa {
 		
 		boolean changed = false;
 		Semiring oldr = trans.remove(t);
-		Semiring newr;
+		Semiring newr, newdiff;
 		if (oldr == null) {
 			Sat.log("\t\tAdding new ");
 			newr = r;
+			newdiff = r.id();
 			changed = true;
 		} else {
+			Semiring olddiff = diffs.remove(t);
 			if (oldr.equals(r)) {
-				
 				newr = oldr;
+				newdiff = olddiff;
 				Sat.log("\t\tIgnoring ");
 			} else {
-			
 				newr = r.combine(oldr);
+				newdiff = newr.diff(oldr);
+				if (olddiff != null) {
+					Semiring s = newdiff.combine(olddiff);
+					olddiff.free();
+					newdiff.free();
+					newdiff = s;
+				}
+				
 				if (!newr.equals(oldr)) {
 					changed = true;
 					Sat.log("\t\tAdding modified ");
@@ -95,6 +106,7 @@ public class Fa {
 		if (Sat.all())
 			Sat.log("\t\t%s%n%n", newr.toRawString());
 		trans.put(t, newr);
+		diffs.put(t, newdiff);
 		
 		// Update hmaps
 		Set<Transition> set = hmaps.get(t.p);
@@ -170,6 +182,19 @@ public class Fa {
 	 */
 	public Semiring getWeight(Transition t) {
 		return trans.get(t);
+	}
+	
+	public Semiring getDiff(Transition t) {
+		return diffs.get(t);
+	}
+	
+	public void resetDiff(Transition t) {
+		Semiring d = diffs.remove(t);
+		if (d != null) {
+			d.free();
+			d = null;
+		}
+		diffs.put(t, d);
 	}
 	
 	/**
@@ -528,6 +553,10 @@ public class Fa {
 			if (d == null) continue;
 			d.free();
 			d = null;
+		}
+		for (Semiring d : diffs.values()) {
+			if (d == null) continue;
+			d.free();
 		}
 	}
 	

@@ -1,6 +1,5 @@
 package de.tum.in.wpds;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -10,15 +9,10 @@ public class PdsSat extends Sat {
 	private Pds pds;
 	private Fa sat;
 	private WorkSet<Transition> workset = new LifoWorkSet<Transition>();
-//	private WitnessGraph wgraph = new WitnessGraph();
 	
 	public PdsSat(Pds pds) {
 		this.pds = pds;
 	}
-	
-//	public WitnessGraph getWitnessGraph() {
-//		return wgraph;
-//	}
 	
 	/**
 	 * Updates the saturating automaton with the transition <code>t</code> 
@@ -36,7 +30,6 @@ public class PdsSat extends Sat {
 	 * 			value is not already included.
 	 */
 	private boolean update(Rule r, Semiring d, Transition t, Transition... T) {
-		
 		if (d.isZero())
 			return false;
 		
@@ -45,21 +38,6 @@ public class PdsSat extends Sat {
 			workset.add(t);
 			updated = true;
 		}
-		
-//		WitnessNode node = wgraph.removeNode(t);
-//		if (node == null) node = new WitnessNode(t);
-//		ArrayList<WitnessNode> P = new ArrayList<WitnessNode>();
-//		if (T != null) {
-//			for (Transition t1 : T) {
-//				WitnessNode n = wgraph.removeNode(t1);
-//				if (n == null) n = new WitnessNode(t1);
-//				P.add(n);
-//				n.N.add(node);
-//				wgraph.putNode(t1, n);
-//			}
-//		}
-//		node.S.add(new WitnessStruct(d, t, r, P));
-//		wgraph.putNode(t, node);
 		
 		return updated;
 	}
@@ -102,14 +80,24 @@ public class PdsSat extends Sat {
 				log("\tNo matching rule found\n");
 				continue;
 			}
+			
+			// Gets the diff weight
+			Semiring diff = sat.getDiff(t);
+			if (diff == null) {
+				log("\t\tZero diff at %s%n", t);
+				continue;
+			}
+			
+			// Iterates for each matching rule
 			for (Rule rule : rules) {
 				
 				log("\tRule %s%n", rule);
 				String p = rule.right.p;
 				String[] w = rule.right.w;
-				d = sat.getWeight(t).extend(rule.d, monitor);
+				
+				d = diff.extend(rule.d, monitor);
 				if (d.isZero()) {
-					log("\t\tZero after extended\n");
+					log("\t\tZero after extended%n");
 					continue;
 				}
 				
@@ -141,18 +129,9 @@ public class PdsSat extends Sat {
 				
 				// Push rule
 				String s = String.format("(%s,%s)", p, w[0]);
-				if (update(rule, sat.getWeight(t).extendPush(rule.d, monitor), p, w[0], s, t)) {
+				if (update(rule, diff.extendPush(rule.d, monitor), p, w[0], s, t)) {
 					updateListener(w[0]);
 				} 
-//				else {
-//					Set<Transition> trans = sat.getEpsilonTransitions(p);
-//					for (Transition tp : trans) {
-//						if (!tp.q.equals(s)) continue;
-//						log("\t\t\tTransition reached from epsilon %s%n", tp);
-//						if (update(rule, d.extendPop(sat.trans.get(tp), monitor), p, w[1], t.q, t, tp))
-//							updateListener(tp.a);
-//					}
-//				}
 				Set<Transition> set = sat.getEpsilonTransitionsTo(s);
 				if (set != null) {
 					for (Transition ts : set) {
@@ -164,6 +143,7 @@ public class PdsSat extends Sat {
 				}
 				update(rule, d, s, w[1], t.q, t);
 			}
+			sat.resetDiff(t);
 		}
 	}
 	

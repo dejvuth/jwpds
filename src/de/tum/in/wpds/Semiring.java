@@ -66,6 +66,14 @@ public interface Semiring {
 	public Semiring combine(Semiring a);
 	
 	/**
+	 * Computes the difference between <code>this</code> and <code>a</code>.
+	 * 
+	 * @param a the semiring to be subtracted with.
+	 * @return the different semiring.
+	 */
+	public Semiring diff(Semiring a);
+	
+	/**
 	 * [Eager & Lazy] Lifts this semiring value with <code>a</code>.
 	 * 
 	 * @param a the semiring to be lifted with.

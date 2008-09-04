@@ -351,7 +351,12 @@ public class DpnSat extends Sat {
 				
 				// Removes t = (p,a,q) from trans
 				Transition t = (Transition) trans.remove();
-				Semiring d = Ai.getWeight(t);
+//				Semiring d = Ai.getWeight(t);
+				Semiring d = Ai.getDiff(t);
+				if (d == null) {
+					log("\t\tZero diff at %s%n", t);
+					continue;
+				}
 				
 				// a is epsilon
 				if (t.a.equals(Fa.epsilon)) {
@@ -474,6 +479,7 @@ public class DpnSat extends Sat {
 						}
 					}
 				}
+				Ai.resetDiff(t);
 			}
 		}
 		
