@@ -133,4 +133,9 @@ public class MinSemiring implements Semiring {
 		// TODO Auto-generated method stub
 		
 	}
+
+	public Semiring diff(Semiring a) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
