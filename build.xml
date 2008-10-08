@@ -1,0 +1,80 @@
+<project name="jwpds" basedir="." default="main">
+
+  <property name="src.dir"     value="src"/>
+  <property name="build.dir"   value="build"/>
+  <property name="classes.dir" value="${build.dir}/classes"/>
+  <property name="classes-tests.dir" value="${build.dir}/classes-tests"/>
+  <property name="jar.dir"     value="${build.dir}/jar"/>
+  <property name="lib.dir"     value="lib"/>
+  <property name="junit.package"     value="libjunit/junit.jar"/>
+  <property name="main-class"  value=""/>
+  <property name="main-class-tests"  value=""/>
+
+  <path id="classpath">
+    <fileset dir="${lib.dir}" includes="**/*.jar"/>
+  </path>
+  
+  <path id="classpath.test">
+    <pathelement location="${junit.package}" />
+    <fileset dir="${jar.dir}">
+      <include name="**/*.jar"/>
+    </fileset>
+    <fileset dir="${lib.dir}" includes="**/*.jar"/>
+  </path> 
+
+  <target name="clean">
+    <delete dir="${build.dir}"/>
+  </target>
+
+  <target name="compile">
+    <mkdir dir="${classes.dir}"/>
+    <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true" excludes="**/*Test.java"/>
+    <copy todir="${classes.dir}">
+      <fileset dir="${src.dir}" excludes="**/*.java"/>
+    </copy> 
+  </target>
+
+  <target name="compile-tests">
+    <mkdir dir="${classes-tests.dir}"/>
+    <javac srcdir="${src.dir}" destdir="${classes-tests.dir}" classpathref="classpath.test" debug="true" includes="**/*Test.java"/>
+    <copy todir="${classes-tests.dir}">
+      <fileset dir="${src.dir}" excludes="**/*.java"/>
+    </copy> 
+  </target>
+  
+  <target name="jar-tests" depends="compile-tests">
+    <mkdir dir="${jar.dir}"/>
+    <jar destfile="${jar.dir}/${ant.project.name}-tests.jar" basedir="${classes-tests.dir}">
+      <manifest>
+        <attribute name="Main-Class" value="${main-class-tests}"/>
+      </manifest>
+    </jar>
+  </target>
+  
+  <target name="jar" depends="compile">
+    <mkdir dir="${jar.dir}"/>
+    <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+      <manifest>
+        <attribute name="Main-Class" value="${main-class}"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="test" depends="jar,jar-tests">
+    <junit fork="yes">
+      <formatter type="plain" usefile="false" />
+      <classpath>
+        <path refid="classpath"/>
+        <path refid="classpath.test"/>
+      </classpath>
+      <batchtest fork="yes">
+        <fileset dir="${src.dir}" includes="**/*Test.java"/>
+      </batchtest>
+    </junit>
+  </target>
+
+  <target name="clean-build" depends="clean,jar"/>
+
+  <target name="main" depends="clean,jar"/>
+
+</project>
