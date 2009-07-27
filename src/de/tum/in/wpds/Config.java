@@ -8,7 +8,14 @@ package de.tum.in.wpds;
  */
 public class Config {
 
+	/**
+	 * The control location.
+	 */
 	public String p;
+	
+	/**
+	 * The stack content.
+	 */
 	public String[] w;
 	
 	public Config(String p, String y) {
